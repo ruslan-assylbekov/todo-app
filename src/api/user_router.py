@@ -3,7 +3,9 @@ from sqlalchemy.orm import Session
 from src.core.database import get_session
 from src.repositories.user_repository import UserRepository
 from src.services.user_service import UserService
-from src.schemas.user_schemas import UserCreate, UserResponse, UserUpdate
+from src.schemas.user_schemas import UserCreate, UserResponse, UserUpdate, UserLogin
+from src.core.security import create_access_token
+
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -26,7 +28,7 @@ def get_user_by_id(user_id: int, service: UserService = Depends(get_user_service
 
 @router.post("/", response_model=UserResponse)
 def create_user(user: UserCreate, service: UserService = Depends(get_user_service)):
-    return service.create_user(user)
+    return service.create_user(user.model_dump())
 
 @router.delete("/{user_id}")
 def delete_user(user_id: int, service: UserService = Depends(get_user_service)):
@@ -35,6 +37,20 @@ def delete_user(user_id: int, service: UserService = Depends(get_user_service)):
         raise HTTPException(status_code=404, detail="User not found")
     return {"detail": "User deleted"}
 
-@router.patch("/{user_id}")
+@router.patch("/{user_id}", response_model=UserResponse)
 def update_user_data(user_id: int, user_data: UserUpdate, service: UserService = Depends(get_user_service)):
     return service.update_user(user_id, user_data)
+
+
+
+@router.post("/login")
+def login(user: UserLogin, service: UserService = Depends(get_user_service)):
+    db_user = service.get_user_by_email(user.email)
+   
+    token = create_access_token({"sub": str(db_user.id)})
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user_id": db_user.id
+    }

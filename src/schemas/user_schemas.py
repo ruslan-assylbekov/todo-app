@@ -1,18 +1,17 @@
 from pydantic import BaseModel, ConfigDict, EmailStr
 from datetime import datetime
 
-# What the client sends when creating a user
 class UserCreate(BaseModel):
     email:     EmailStr
     password:  str
     firstname: str
     lastname:  str
 
-# What the API returns (no password)
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id:        int
+    password: str
     email:     str
     firstname: str
     lastname:  str
@@ -20,5 +19,11 @@ class UserResponse(BaseModel):
     last_updated: datetime
 
 class UserUpdate(BaseModel):
-    username: str | None = None
-    email: str | None = None
+    email: EmailStr | None = None
+    password: str | None = None
+    firstname: str | None = None
+    lastname: str | None = None
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str

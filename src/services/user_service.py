@@ -11,8 +11,8 @@ class UserService:
     def get_user_by_id(self, user_id: int):
         return self.repository.get_by_id(user_id)
     
-    def get_user_by_email(self, user_id: int):
-        return self.repository.get_by_email(user_id)
+    def get_user_by_email(self, email: str):
+        return self.repository.get_by_email(email)
 
     def create_user(self, user_data: dict):
         return self.repository.create(user_data)
@@ -22,11 +22,7 @@ class UserService:
 
     def update_user(self, user_id: int, user_data: dict):
         user = self.repository.get_by_id(user_id)
-
         if not user:
-            raise HTTPException(
-                status_code=404,
-                detail="User not found"
-            )
-
-        return self.repository.update(user, user_data)
+            raise HTTPException(status_code=404, detail="User not found")
+        update_data = user_data.model_dump(exclude_unset=True, exclude_none=True)
+        return self.repository.update(user, update_data)
