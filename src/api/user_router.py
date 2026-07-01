@@ -50,7 +50,7 @@ def update_user_data(user_id: int, user_data: UserUpdate, service: UserService =
 @router.post("/login")
 def login(user: UserLogin, service: UserService = Depends(get_user_service)):
     db_user = service.get_user_by_email(user.email)
-    if not verify_password(user.password, db_user.password):
+    if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     token = create_access_token({"sub": str(db_user.id)})
