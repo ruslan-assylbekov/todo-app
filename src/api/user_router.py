@@ -47,7 +47,7 @@ def update_user_data(user_id: int, user_data: UserUpdate, service: UserService =
 def login(user: UserLogin, service: UserService = Depends(get_user_service)):
     db_user = service.get_user_by_email(user.email)
    
-    token = create_access_token({"sub": str(db_user.id)})
+    token = create_access_token({"sub": db_user.id})
 
     return {
         "access_token": token,

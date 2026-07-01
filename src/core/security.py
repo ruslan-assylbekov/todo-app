@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
-from jose import jwt
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
 
 
 SECRET_KEY = "change-this-secret"
