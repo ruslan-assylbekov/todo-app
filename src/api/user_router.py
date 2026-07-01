@@ -4,7 +4,7 @@ from src.core.database import get_session
 from src.repositories.user_repository import UserRepository
 from src.services.user_service import UserService
 from src.schemas.user_schemas import UserCreate, UserResponse, UserUpdate, UserLogin
-from src.core.security import create_access_token
+from src.core.security import create_access_token, get_password_hash, verify_password
 
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -28,7 +28,9 @@ def get_user_by_id(user_id: int, service: UserService = Depends(get_user_service
 
 @router.post("/", response_model=UserResponse)
 def create_user(user: UserCreate, service: UserService = Depends(get_user_service)):
-    return service.create_user(user.model_dump())
+    user_data = user.model_dump()
+    user_data["password"] = get_password_hash(user_data["password"])
+    return service.create_user(user_data)
 
 @router.delete("/{user_id}")
 def delete_user(user_id: int, service: UserService = Depends(get_user_service)):
@@ -39,6 +41,8 @@ def delete_user(user_id: int, service: UserService = Depends(get_user_service)):
 
 @router.patch("/{user_id}", response_model=UserResponse)
 def update_user_data(user_id: int, user_data: UserUpdate, service: UserService = Depends(get_user_service)):
+    if user_data.password:
+        user_data.password = get_password_hash(user_data.password)
     return service.update_user(user_id, user_data)
 
 
@@ -46,8 +50,10 @@ def update_user_data(user_id: int, user_data: UserUpdate, service: UserService =
 @router.post("/login")
 def login(user: UserLogin, service: UserService = Depends(get_user_service)):
     db_user = service.get_user_by_email(user.email)
-   
-    token = create_access_token({"sub": db_user.id})
+    if not verify_password(user.password, db_user.password):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    token = create_access_token({"sub": str(db_user.id)})
 
     return {
         "access_token": token,

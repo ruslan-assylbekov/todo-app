@@ -19,3 +19,16 @@ app.include_router(task_router.router)
 
 #uvicorn src.main:app --reload
 #.venv\Scripts\activate
+
+
+
+# Todo 
+
+# Функции для тасков с вторичными ключами user_id
+# Свои HTTP-Exceptions
+# Аннотации для функций
+
+# (В последнюю очередь)
+# Перейти на асинхронное ядро
+# Pydantic-settings/env для хранения ключей 
+# Шифрование паролей юзеров
