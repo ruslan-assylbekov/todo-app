@@ -5,7 +5,7 @@ from src.repositories.user_repository import UserRepository
 from src.services.user_service import UserService
 from src.schemas.user_schemas import UserCreate, UserResponse, UserUpdate, UserLogin
 from src.core.security import create_access_token, get_password_hash, verify_password
-
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -48,9 +48,9 @@ def update_user_data(user_id: int, user_data: UserUpdate, service: UserService =
 
 
 @router.post("/login")
-def login(user: UserLogin, service: UserService = Depends(get_user_service)):
-    db_user = service.get_user_by_email(user.email)
-    if not db_user or not verify_password(user.password, db_user.password):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), service: UserService = Depends(get_user_service)):
+    db_user = service.get_user_by_email(form_data.username)
+    if not db_user or not verify_password(form_data.password, db_user.password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     token = create_access_token({"sub": str(db_user.id)})
@@ -58,5 +58,4 @@ def login(user: UserLogin, service: UserService = Depends(get_user_service)):
     return {
         "access_token": token,
         "token_type": "bearer",
-        "user_id": db_user.id
     }
